@@ -41,7 +41,7 @@ INSTALLED_APPS = [
 
     #custom apps
     'core',
-    'cart',
+    # 'corsheaders'
     'rest_framework',
 
 ]
@@ -54,8 +54,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+
 ]
 
+# CORS_ORIGIN_WHITELIST = [
+#     'http://127.0.0.1:3000',
+#     'http://localhost:4200',
+#     'http://yoursite.com'
+# ]
+
+# CORS_ORIGIN_ALLOW_ALL = True
 ROOT_URLCONF = 'myproject.urls'
 
 TEMPLATES = [

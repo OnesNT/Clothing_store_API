@@ -16,6 +16,7 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    id = models.AutoField(primary_key=True)
     product_name_eng = models.CharField(max_length=255, default='')
     product_name_ru = models.CharField(max_length=255, default='')
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -23,6 +24,7 @@ class Product(models.Model):
     discount = models.DecimalField(max_digits=10, decimal_places=2)
     color = models.CharField(max_length=7, default='')
     size = models.CharField(max_length=10, default='')
+    limit = models.IntegerField(default=0, validators=[MinValueValidator(0)])
     image = models.ImageField(upload_to='product_images/')
     image_hover = models.ImageField(upload_to='product_images/', blank=True)
     image_detail1 = models.ImageField(upload_to='product_images/', blank=True)
