@@ -1,0 +1,96 @@
+<!-- 
+<form method="get">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+<nav>
+    <ul>
+
+       <li><a href="{% url 'core:contact' %}">Contact</a></li>
+    </ul>
+</nav>
+
+<div>
+    {% if products %}
+        {% for product in products %}
+            <div>
+                <h2>{{ product.name }}</h2>
+                <p>{{ product.description }}</p>
+                <p>Price: ${{ product.price }}</p>
+                <!-- <img src="{{ product.image.url }}" alt="{{ product.name }}"> -->
+            <!-- </div>
+        {% endfor %}
+    {% else %}
+        <p>No products found.</p>
+    {% endif %}
+</div> --> -->
+
+<!-- store/templates/store/home.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My E-commerce Store</title>
+
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Welcome to My Store</h1>
+            <form method="get">
+                {{ form.as_p }}
+                <button type="submit">Search</button>
+            </form>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'core:products' %}">Products</a></li>
+                    <li><a href="{% url 'core:contact' %}">Contact</a></li>
+                    <li><a href="{% url 'core:login' %}">Login</a></li>
+                    <li><a href="{% url 'core:signup' %}">Register</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="hero">
+        <div class="container">
+            <h2>Discover Amazing Products</h2>
+            <p>Shop our latest collection of high-quality products</p>
+            <a href="#products" class="btn">Shop Now</a>
+        </div>
+    </section>
+
+    <section id="products">
+        <div class="container">
+            <h2>Featured Products</h2>
+            <!-- Add product grid or carousel here -->
+        </div>
+    </section>
+
+    <section id="delivery">
+        <div class="container">
+            <h2>Fast &amp; Reliable Delivery</h2>
+            <p>We offer fast and reliable delivery services to ensure your products reach you on time.</p>
+        </div>
+    </section>
+
+    <section id="contact">
+        <div class="container">
+            <h2>Contact Us</h2>
+            <p>If you have any questions or inquiries, feel free to contact us.</p>
+            <a href="#" class="btn">Contact Us</a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 My E-commerce Store. All rights reserved.</p>
+            <!-- Add additional footer links and information here -->
+        </div>
+    </footer>
+</body>
+</html>
+

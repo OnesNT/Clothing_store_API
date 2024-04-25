@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: your-api-image:tag
+          ports:
+            - containerPort: 8000
+          env:
+            - name: SQLITE_DATABASE_FILE
+              value: /app/db.sqlite3
