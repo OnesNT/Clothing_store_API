@@ -1,14 +1,6 @@
 from django.contrib import admin
-from .models import Category
-from .models import Product
-from .models import ProductSize
-from .models import ProductColor
-from .models import ProductSKU
-from .models import ShoppingSession
-from .models import Cart
-from .models import CartItem
-from .models import OrderDetails
-from .models import OrderItem
+from .models import Category, Product, ProductSize, ProductColor, ProductSKU, ShoppingSession, Cart, CartItem, OrderDetails, OrderItem
+
 
 admin.site.register(Category)
 admin.site.register(Product)

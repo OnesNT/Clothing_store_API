@@ -18,7 +18,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework import permissions # type: ignore
 from rest_framework.authentication import TokenAuthentication # type: ignore
 from rest_framework.authtoken.models import Token # type: ignore
-
+from django.db import transaction
+from django.utils import timezone
 # GET request API 
 # ------------------------------------------------------------------------------------------------------------------------------
 
@@ -90,7 +91,7 @@ def get_product_properties(request, name_product, size=0, color=''):
         product_skus = product_skus.filter(color_attribute__value=color)
 
     # Include available sizes and colors in the response data
-    if not (size or color):
+    if not (size and color):
         available_sizes = set(product_sku.size_attribute.value for product_sku in product_skus)
         available_colors = set(product_sku.color_attribute.value for product_sku in product_skus)
         properties['available_sizes'] = list(available_sizes)
@@ -99,9 +100,10 @@ def get_product_properties(request, name_product, size=0, color=''):
         try:
             product_sku = product_skus.first()  # Get the first product SKU
             properties['price'] = product_sku.price
+            properties['quantity'] = product_sku.quantity
         except AttributeError:
             properties['price'] = None  # No product SKU found, set price to None
-
+            properties['quantity'] = None
     return Response(properties)
 
 # get shopping sessions
@@ -165,8 +167,6 @@ def create_order(request):
 
 
 
-
-
 # DELETE request API
 # ------------------------------------------------------------------------------------------------------------------------------
 
@@ -175,6 +175,7 @@ def delete_order(request, order_id):
     order = get_object_or_404(OrderDetails, pk=order_id)
     order.delete()
     return Response({"message": "Order deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['DELETE'])
 def delete_cart_item(request, cart_item_id):
@@ -190,6 +191,82 @@ def delete_shopping_session(request, session_id):
     return Response({"message": "Shoping session item deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 # others request API
+# @api_view(['PUT', 'PATCH'])
+# def update_quantity_productSKU(request, name_product, size, color, quantity):
+#     product = get_object_or_404(Product, name=name_product)
+#     size_product = get_object_or_404(ProductSize, value=size)
+#     color_product = get_object_or_404(ProductColor, value=color)
+#     SKU = ProductSKU.objects.filter(product=product, size_attribute=size_product, color_product=color_product)
+#     new_quantity = SKU.quantity - quantity
+# from django.http import JsonResponse
+
+
+@api_view(['PUT', 'PATCH'])
+def update_quantity_productSKU(request, name_product, size, color, quantity):
+    # Retrieve the product and product attributes
+    product = get_object_or_404(Product, name=name_product)
+    size_product = get_object_or_404(ProductSize, value=size)
+    color_product = get_object_or_404(ProductColor, value=color)
+    
+    # Retrieve the product SKU
+    try:
+        SKU = ProductSKU.objects.get(product=product, size_attribute=size_product, color_attribute=color_product)
+    except ProductSKU.DoesNotExist:
+        return Response({"error": "Product SKU does not exist"}, status=404)
+    
+    # Update the quantity
+    if request.method == 'PUT':
+        # For PUT, replace the quantity with the provided quantity
+        new_quantity = quantity
+    elif request.method == 'PATCH':
+        # For PATCH, subtract the provided quantity from the current quantity
+        new_quantity = SKU.quantity - quantity
+
+    if new_quantity < 0:
+        return Response({"error": "Invalid quantity, resulting quantity would be negative"}, status=400)
+
+    # Update the quantity and save the product SKU
+    SKU.quantity = new_quantity
+    SKU.save()
+
+    # Return a JSON response indicating success
+    return Response({"message": "Quantity updated successfully"})
+
+
+@api_view(['PUT'])
+def cancel_order_view(request, order_id):
+    
+    @transaction.atomic
+    def cancel_order(order_id):
+        # Retrieve the order details
+        order = get_object_or_404(OrderDetails, id=order_id)
+
+        # Retrieve all order items associated with the order
+        order_items = OrderItem.objects.filter(order=order)
+
+        # Increase the quantities of the corresponding product SKUs back to their original values
+        for order_item in order_items:
+            product_sku = order_item.product_sku
+            product_sku.quantity += order_item.quantity
+            product_sku.save()
+
+        # Mark the order as canceled
+        order.deleted_at = timezone.now()
+        order.save()
+
+        return True  # Indicate successful cancellation
+    
+
+    if request.method == 'PUT':
+        success = cancel_order(order_id)
+        if success:
+            return Response({'message': 'Order canceled successfully'})
+        else:
+            return Response({'message': 'Failed to cancel order'}, status=400)
+    
+    return Response({'message': 'Product quantities increased back successfully'})
+
+
 
 @api_view(['PUT', 'PATCH'])
 def update_order(request, order_id):

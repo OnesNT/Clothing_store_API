@@ -84,5 +84,6 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     product_sku = models.ForeignKey(ProductSKU, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
+    order_success = models.BooleanField()
     created_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(null=True, blank=True)

@@ -34,12 +34,12 @@ urlpatterns = [
     path('api/create-order/<int:session_id>', views.create_order, name='create_order'),
     
 
-
     #----------------------------------------------------------------------------------------
     # Update and delete APIs
+
     path('api/update-order/<int:order_id>/', views.update_order, name='update_order'),
     path('api/delete-order/<int:order_id>/', views.delete_order, name='delete_order'),
     path('api/update-cart-item/<int:cart_item_id>/', views.update_cart_item, name='update_cart_item'),
     path('api/delete-cart-item/<int:cart_item_id>/', views.delete_cart_item, name='delete_cart_item'),
-
+    path('api/update-productSKU-quantity/<str:name_product>/<str:size>/<str:color>/<int:quantity>/', views.update_quantity_productSKU, name='update_quantity_productSKU')
 ]
