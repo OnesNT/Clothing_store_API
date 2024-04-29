@@ -18,8 +18,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework import permissions # type: ignore
 from rest_framework.authentication import TokenAuthentication # type: ignore
 from rest_framework.authtoken.models import Token # type: ignore
-from django.db import transaction
-from django.utils import timezone
+from django.contrib.sessions.backends.db import SessionStore
+
 # GET request API 
 # ------------------------------------------------------------------------------------------------------------------------------
 
@@ -43,26 +43,24 @@ def get_product_name(request, name_product):
     serializer = ProductSerializer(product)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def get_image_product(request, name_product):
-    product = get_object_or_404(Product, name=name_product)
-    images = [product.picture_1, product.picture_2, product.picture_3, product.picture_4]
-    return Response(images)    
+# @api_view(['GET'])
+# def get_image_product(request, name_product):
+#     product = get_object_or_404(Product, name=name_product)
+#     images = [product.picture_1, product.picture_2, product.picture_3, product.picture_4]
+#     return Response(images)    
 
 @api_view(['GET'])
-def get_products_by_category(request, category_id):
+def get_products_by_category(request, ru_category):
 
     def get_products(category):
         products = Product.objects.filter(category=category)
-        for product in products:
-            print(product.name, ' ', product.category)
         child_categories = Category.objects.filter(parent_category=category)
         for child_category in child_categories:
             products |= get_products(child_category)
         return products
 
     try:
-        category = Category.objects.get(id=category_id)
+        category = Category.objects.get(ru_name=ru_category)
         products = get_products(category)
         serializer = ProductSerializer(products, many=True)
         return Response(serializer.data)
@@ -71,40 +69,127 @@ def get_products_by_category(request, category_id):
 
 
 # get product properties
+@api_view(['GET'])
+def get_product_id_properties(request, product_id):
+
+    product = Product.objects.filter(id=product_id).first()
+    productSKU = ProductSKU.objects.filter(product=product).first()
+
+    relate_products = Product.objects.filter(group=product.group)
+    
+    list_color = []
+    data = []
+    for  relate_product in relate_products: 
+        id = relate_product.id
+        color = relate_product.color_attribute
+        list_color.append(color.en_value)
+        product = Product.objects.filter(id=id).first()
+        productSKU = ProductSKU.objects.filter(product=product).first()
+        data.append({
+            "id": id,
+            "color": str(color.en_value), 
+            "id_sku": productSKU.id,
+        })
+
+    properties = { 
+        "id_ski" : str(productSKU.id), 
+        "name": product.name,
+        "price": str(productSKU.price), 
+        "image_1": product.img_base,
+        "image_2": product.img_hover,
+        "product_relate": data,
+        "color": list_color,
+    }
+    return Response(properties)
+
+
+
+# @api_view(['GET'])
+# def get_product_properties(request, name_product, size=0, color=''):
+#     product = get_object_or_404(Product, name=name_product)
+#     properties = {
+#         'name': product.name,
+#         'description': product.description,
+#         'base_picture': product.base_picture,
+#         'category': product.category.name,
+#     }
+
+#     product_skus = product.productsku_set.all()
+
+#     if size != 0:
+#         product_skus = product_skus.filter(size_attribute__value=size)
+
+#     if color:
+#         product_skus = product_skus.filter(color_attribute__value=color)
+
+#     # Include available sizes and colors in the response data
+#     if not (size or color):
+#         available_sizes = set(product_sku.size_attribute.value for product_sku in product_skus)
+#         available_colors = set(product_sku.color_attribute.value for product_sku in product_skus)
+#         properties['available_sizes'] = list(available_sizes)
+#         properties['available_colors'] = list(available_colors)
+#     else:
+#         try:
+#             product_sku = product_skus.first()  # Get the first product SKU
+#             properties['price'] = product_sku.price
+#         except AttributeError:
+#             properties['price'] = None  # No product SKU found, set price to None
+
+#     return Response(properties)
 
 @api_view(['GET'])
-def get_product_properties(request, name_product, size=0, color=''):
-    product = get_object_or_404(Product, name=name_product)
-    properties = {
-        'name': product.name,
-        'description': product.description,
-        'base_picture': product.base_picture,
-        'category': product.category.name,
-    }
-
-    product_skus = product.productsku_set.all()
-
-    if size != 0:
-        product_skus = product_skus.filter(size_attribute__value=size)
-
-    if color:
-        product_skus = product_skus.filter(color_attribute__value=color)
-
-    # Include available sizes and colors in the response data
-    if not (size and color):
-        available_sizes = set(product_sku.size_attribute.value for product_sku in product_skus)
-        available_colors = set(product_sku.color_attribute.value for product_sku in product_skus)
-        properties['available_sizes'] = list(available_sizes)
-        properties['available_colors'] = list(available_colors)
+def get_relate_productID(request, product_id):
+    if product_id:
+        if product_id[-1].isdigit():
+            # If the last character is a digit, retrieve the product by its ID
+            product = get_object_or_404(Product, id=product_id)
+            return Response({product_id: str(product.color_attribute)})
+        else:
+            # If the last character is not a digit, assume it's a group ID and retrieve related products
+            products = Product.objects.filter(group=product_id[0:-1])
+            print([product.id for product in products])
+            data = {str(product.id): str(product.color_attribute) for product in products}
+            return Response(data)
     else:
-        try:
-            product_sku = product_skus.first()  # Get the first product SKU
-            properties['price'] = product_sku.price
-            properties['quantity'] = product_sku.quantity
-        except AttributeError:
-            properties['price'] = None  # No product SKU found, set price to None
-            properties['quantity'] = None
+        return Response({"error": "Product ID is missing"})
+
+
+@api_view(['GET'])
+def merge_product_productSKU(request, id): 
+    productSKU = get_object_or_404(ProductSKU, id=id)
+    product = productSKU.product
+
+    properties = { 
+        "name" : product.name, 
+        "color": str(product.color_attribute),
+        "size": str(productSKU.size_attribute), 
+        "image_base": product.img_base,
+        "image_hover": product.img_hover, 
+        "image_detail_1": product.img_details_1,
+        "image_detail_2":product.img_details_2,
+        "category": str(product.category),
+        "group": str(product.group),
+        "price": str(productSKU.price),
+        "quantity": str(productSKU.quantity),  
+    }
+   
     return Response(properties)
+
+
+@api_view(['GET'])
+def view_cart(request):
+    # Retrieve the cart associated with the current session
+    session_key = request.session.session_key
+    shopping_session = get_object_or_404(ShoppingSession, session_key=session_key)
+    cart = get_object_or_404(Cart, shopping_session=shopping_session )
+
+    if cart:
+        cart_items = CartItem.objects.filter(cart=cart)
+        serializer = CartItemSerializer(cart_items, many=True)
+        return Response(serializer.data)
+    else:
+        return Response({'message': 'Cart is empty'})
+    
 
 # get shopping sessions
 
@@ -119,7 +204,6 @@ def get_shopping_session_details(request, session_id):
     shopping_session = get_object_or_404(ShoppingSession, pk=session_id)
     serializer = ShoppingSessionSerializer(shopping_session)
     return Response(serializer.data)
-
 
 # get order
 @api_view(['GET'])
@@ -140,7 +224,7 @@ def get_order_user_details(request, order_id):
 # ------------------------------------------------------------------------------------------------------------------------------
 
 # post shopping sessions
-@api_view(['POST'])
+# @api_view(['POST'])
 def create_shopping_session(request):
     serializer = ShoppingSessionSerializer(data=request.data)
     if serializer.is_valid():
@@ -167,6 +251,8 @@ def create_order(request):
 
 
 
+
+
 # DELETE request API
 # ------------------------------------------------------------------------------------------------------------------------------
 
@@ -175,7 +261,6 @@ def delete_order(request, order_id):
     order = get_object_or_404(OrderDetails, pk=order_id)
     order.delete()
     return Response({"message": "Order deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
-
 
 @api_view(['DELETE'])
 def delete_cart_item(request, cart_item_id):
@@ -191,82 +276,6 @@ def delete_shopping_session(request, session_id):
     return Response({"message": "Shoping session item deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
 
 # others request API
-# @api_view(['PUT', 'PATCH'])
-# def update_quantity_productSKU(request, name_product, size, color, quantity):
-#     product = get_object_or_404(Product, name=name_product)
-#     size_product = get_object_or_404(ProductSize, value=size)
-#     color_product = get_object_or_404(ProductColor, value=color)
-#     SKU = ProductSKU.objects.filter(product=product, size_attribute=size_product, color_product=color_product)
-#     new_quantity = SKU.quantity - quantity
-# from django.http import JsonResponse
-
-
-@api_view(['PUT', 'PATCH'])
-def update_quantity_productSKU(request, name_product, size, color, quantity):
-    # Retrieve the product and product attributes
-    product = get_object_or_404(Product, name=name_product)
-    size_product = get_object_or_404(ProductSize, value=size)
-    color_product = get_object_or_404(ProductColor, value=color)
-    
-    # Retrieve the product SKU
-    try:
-        SKU = ProductSKU.objects.get(product=product, size_attribute=size_product, color_attribute=color_product)
-    except ProductSKU.DoesNotExist:
-        return Response({"error": "Product SKU does not exist"}, status=404)
-    
-    # Update the quantity
-    if request.method == 'PUT':
-        # For PUT, replace the quantity with the provided quantity
-        new_quantity = quantity
-    elif request.method == 'PATCH':
-        # For PATCH, subtract the provided quantity from the current quantity
-        new_quantity = SKU.quantity - quantity
-
-    if new_quantity < 0:
-        return Response({"error": "Invalid quantity, resulting quantity would be negative"}, status=400)
-
-    # Update the quantity and save the product SKU
-    SKU.quantity = new_quantity
-    SKU.save()
-
-    # Return a JSON response indicating success
-    return Response({"message": "Quantity updated successfully"})
-
-
-@api_view(['PUT'])
-def cancel_order_view(request, order_id):
-    
-    @transaction.atomic
-    def cancel_order(order_id):
-        # Retrieve the order details
-        order = get_object_or_404(OrderDetails, id=order_id)
-
-        # Retrieve all order items associated with the order
-        order_items = OrderItem.objects.filter(order=order)
-
-        # Increase the quantities of the corresponding product SKUs back to their original values
-        for order_item in order_items:
-            product_sku = order_item.product_sku
-            product_sku.quantity += order_item.quantity
-            product_sku.save()
-
-        # Mark the order as canceled
-        order.deleted_at = timezone.now()
-        order.save()
-
-        return True  # Indicate successful cancellation
-    
-
-    if request.method == 'PUT':
-        success = cancel_order(order_id)
-        if success:
-            return Response({'message': 'Order canceled successfully'})
-        else:
-            return Response({'message': 'Failed to cancel order'}, status=400)
-    
-    return Response({'message': 'Product quantities increased back successfully'})
-
-
 
 @api_view(['PUT', 'PATCH'])
 def update_order(request, order_id):
@@ -287,4 +296,40 @@ def update_cart_item(request, cart_item_id):
         serializer.save()
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# @api_view(['POST'])
+# def add_to_cart(request, product_id):
+#     # Retrieve or create the cart associated with the current session
+#     session_key = request.session.session_key
+#     cart, _ = Cart.objects.get_or_create(shopping_session=session_key)
+
+#     # Add the product to the cart (create a new cart item)
+#     cart_item, _ = CartItem.objects.get_or_create(cart=cart, product_id=product_id)
+#     cart_item.quantity += 1
+#     cart_item.save()
+
+#     return Response({'message': 'Item added to cart successfully'})
+
+
+
+@api_view(['POST'])
+def add_to_cart(request, product_sku_id):
+    session_key = request.session.session_key
+
+    if not session_key:
+        request.session.create()
+        session_key = request.session.session_key
+    
+    shopping_session, _ = ShoppingSession.objects.get_or_create(session_key=session_key)
+    cart, _ = Cart.objects.get_or_create(shopping_session=shopping_session)
+
+    product_sku = get_object_or_404(ProductSKU, id=product_sku_id)
+    product = product_sku.product
+    
+    cart_item, _ = CartItem.objects.get_or_create(cart=cart, product_sku=product_sku, product=product)
+    cart_item.quantity += 1
+    cart_item.save()
+
+    return Response({'message': 'Item added to cart successfully'})
+
 

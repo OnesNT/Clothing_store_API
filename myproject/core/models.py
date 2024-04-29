@@ -5,51 +5,61 @@ from django.utils import timezone
 
 
 class Category(models.Model):
-    id = models.AutoField(primary_key=True)
+    # id = models.AutoField(primary_key=True)
+    ru_name = models.CharField(primary_key=True, max_length=255, default='')
     parent_category = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
-    name = models.CharField(max_length=255, default='')
+    en_name = models.CharField(max_length=255, default='')
     description = models.CharField(max_length=255, default='', blank=True)
     created_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
-class Product(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, default='')
-    description = models.CharField(max_length=255, default='', blank=True)
-    base_picture = models.CharField(max_length=255, default='', blank=True)
-    picture_1 = models.CharField(max_length=255, default='', blank=True)
-    picture_2 = models.CharField(max_length=255, default='', blank=True)
-    picture_3 = models.CharField(max_length=255, default='', blank=True)
-    picture_4 = models.CharField(max_length=255, default='', blank=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(default=timezone.now)
-    deleted_at = models.DateTimeField(null=True, blank=True)
 
 class ProductSize(models.Model):
-    id = models.AutoField(primary_key=True)
-    value = models.CharField(max_length=255, default='')
+    value = models.CharField(primary_key=True, max_length=255, default='')
     created_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
 class ProductColor(models.Model):
-    id = models.AutoField(primary_key=True)
-    value = models.CharField(max_length=255, default='')
+    ru_value = models.CharField(primary_key=True, max_length=255, default='')
+    en_value = models.CharField(max_length=255, default='')
     created_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
+class ProductGroup(models.Model):
+    group_id = models.CharField(primary_key=True, max_length=255, default='')
+    description = models.CharField(max_length=255, default='')
+    created_at = models.DateTimeField(default=timezone.now)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+
+class Product(models.Model):
+    id = models.CharField(primary_key=True, max_length=20)
+    name = models.CharField(max_length=255, default='')
+    # description = models.CharField(max_length=255, default='', blank=True)
+    img_base = models.CharField(max_length=255, default='', blank=True)
+    img_hover = models.CharField(max_length=255, default='', blank=True)
+    img_details_1 = models.CharField(max_length=255, default='', blank=True)
+    img_details_2 = models.CharField(max_length=255, default='', blank=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    color_attribute = models.ForeignKey(ProductColor, on_delete=models.CASCADE)
+    group = models.ForeignKey(ProductGroup, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(default=timezone.now)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
+
 class ProductSKU(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.CharField(primary_key=True, max_length=20)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     size_attribute = models.ForeignKey(ProductSize, on_delete=models.CASCADE)
-    color_attribute = models.ForeignKey(ProductColor, on_delete=models.CASCADE)
     price = models.IntegerField(default=0)
     quantity = models.IntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
 class ShoppingSession(models.Model):
-    id = models.AutoField(primary_key=True)
-    created_at = models.DateTimeField(default=timezone.now)
+    id = models.CharField(primary_key=True, max_length=100, default='')
+    session_key = models.CharField(max_length=40, unique=True, default='') 
+    created_at = models.DateTimeField(auto_now_add=True)
     deleted_at = models.DateTimeField(null=True, blank=True)
 
 class Cart(models.Model):
@@ -84,6 +94,5 @@ class OrderItem(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     product_sku = models.ForeignKey(ProductSKU, on_delete=models.CASCADE)
     quantity = models.IntegerField(default=0)
-    order_success = models.BooleanField()
     created_at = models.DateTimeField(default=timezone.now)
     deleted_at = models.DateTimeField(null=True, blank=True)

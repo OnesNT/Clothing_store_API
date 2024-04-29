@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     #custom apps
     'core',
     'whatsapp',
-    'pyautogui',
+    # 'pyautogui',
     # 'cart',
     # 'corsheaders'
     'rest_framework',
