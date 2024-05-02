@@ -1,69 +1,69 @@
 roots_category = [
     {
-        'en_name': "Bijouterie",
-        'ru_name': "Бижутерия",
+        'en_name': "bijouterie",
+        'ru_name': "бижутерия",
     },
     {
-        'en_name': "Clothes",
-        'ru_name': "Одежда",
+        'en_name': "clothes",
+        'ru_name': "одежда",
     },
     {
-        'en_name': "Accessories",
-        'ru_name': "Аксессуары",
+        'en_name': "accessories",
+        'ru_name': "аксессуары",
     }
 ]
 
 clothes_category = [
     {
-        'en_name': "Dresses",
-        'ru_name': "Платья",
+        'en_name': "dresses",
+        'ru_name': "платья",
     },
     {
-        'en_name': "Tops",
-        'ru_name': "Топы",
+        'en_name': "tops",
+        'ru_name': "топы",
     },
     {
-        'en_name': "T-shirts",
-        'ru_name': "Футболки",
+        'en_name': "t-shirts",
+        'ru_name': "футболки",
     },
     {
-        'en_name': "Long sleeves",
+        'en_name': "long-sleeves",
         'ru_name': "Лонгсливы",
     },
     {
-        'en_name': "Bodysuits",
-        'ru_name': "Боди",
+        'en_name': "bodysuits",
+        'ru_name': "боди",
     },
     {
-        'en_name': "T-shirts",
-        'ru_name': "Футболки",
+        'en_name': "t-shirts",
+        'ru_name': "футболки",
     },
     {
-        'en_name': "Overalls",
-        'ru_name': "Комбинезоны",
+        'en_name': "оveralls",
+        'ru_name': "комбинезоны",
     },
     {
-        'en_name': "Skirts",
-        'ru_name': "Юбки",
+        'en_name': "skirts",
+        'ru_name': "юбки",
     },
     {
-        'en_name': "Blouses",
-        'ru_name': "Блузки",
+        'en_name': "blouses",
+        'ru_name': "блузки",
     },
     {
-        'en_name': "Shirts",
-        'ru_name': "Рубашки",
+        'en_name': "shirts",
+        'ru_name': "рубашки",
     },
     {
-        'en_name': "Socks",
-        'ru_name': "Носки",
+        'en_name': "socks",
+        'ru_name': "носки",
     },
     {
-        'en_name': "Underwear",
-        'ru_name': "Нижнее Белье",
+        'en_name': "underwear",
+        'ru_name': "нижнее белье",
     },
     {
-        'en_name': "Pijama",
-        'ru_name': "Пижама",
+        'en_name': "pijama",
+        'ru_name': "пижама",
     }
 ]

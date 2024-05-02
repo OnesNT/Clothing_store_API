@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-_tdx(6f$s9j21p(b!&yxx4x3#$r3d7byg8kyd&z0ed^n-0*7+7
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0', 'yourdomain.com', 'your_ip_address', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['0.0.0.0', 'yourdomain.com', 'your_ip_address', 'localhost', '127.0.0.1', 'http://localhost:3030']
 
 
 
@@ -39,15 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    #custom apps
+    'corsheaders',
     'core',
-    'whatsapp',
-    # 'pyautogui',
-    # 'cart',
-    # 'corsheaders'
     'rest_framework',
-
+    'whatsapp',
 ]
 
 MIDDLEWARE = [
@@ -60,8 +55,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
 
 # CORS_ORIGIN_WHITELIST = [
 #     'http://127.0.0.1:3000',

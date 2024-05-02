@@ -52,4 +52,4 @@ class OrderDetailsSerializer(serializers.ModelSerializer):
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = '__all__'        
+        fields = '__all__'
