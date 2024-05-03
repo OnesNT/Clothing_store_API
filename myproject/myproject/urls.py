@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("core.urls")),
     path('whatsapp/', include('whatsapp.urls')),
-    # # path('cart/', include('cart.urls')),
+    path('cart/', include('cart.urls')),
     path('', include('core.api.urls')),
     
     # path('api/cart', include('cart.api.urls'))
