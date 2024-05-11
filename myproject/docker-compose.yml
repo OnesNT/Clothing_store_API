@@ -1,0 +1,22 @@
+version: '3'
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    volumes:
+      - ./db.sqlite3:/app/db.sqlite3
+    command: sh -c "touch /app/db.sqlite3 && chmod 777 /app/db.sqlite3 && sleep infinity"
+
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - SQLITE_DATABASE_FILE=/app/db.sqlite3
