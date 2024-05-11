@@ -20,6 +20,8 @@ first we have to dockerize and push our code to dockerhub
 docker build -t your-dockerhub-username/myproject:lastest .
 docker login
 docker push your-dockerhub-username/myproject:lastest
+kubectl apply -f kubernetes/deployment.yaml
+kubectl apply -f kubernetes/service.yaml 
 ```
 
 We start deploying it 
